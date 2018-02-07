@@ -67,19 +67,16 @@ const LuisModelUrl = 'https://' + luisAPIHostName + '/luis/v1/application?id=' +
 var recognizer = new builder.LuisRecognizer(LuisModelUrl);
 var intents = new builder.IntentDialog({ recognizers: [recognizer] })
 .matches('Greeting', (s) => {
-    s.send(
-        new builder.Message(s).text('你在跟我打招呼, 你說了： \'%s\'.', s.message.text)
-    );
+   s.send(new builder.Message(s).text('大家好我叫「桜愛」 請多多指教'));
 })
 .matches('Help', (s) => {
-    s.send('你在求救, 你說了： \'%s\'.', 
-        s.message.text);
+   s.send(new builder.Message(s).text('FS只能靠自己'));
 })
 /*
 .matches('<yourIntent>')... See details at http://docs.botframework.com/builder/node/guides/understanding-natural-language/
 */
 .onDefault((s) => {
-    s.send('對不起，我沒聽懂。你說了： \'%s\'.', s.message.text);
+    s.send(new builder.Message(s).text('對不起，我沒聽懂。你說了：'+ s.message.text));
 });
 
 bot.dialog('/', intents);
@@ -97,7 +94,7 @@ bot.on('conversationUpdate', function (message) {
             break;
     }
     var isGroup = message.address.conversation.isGroup;
-    var txt = isGroup ? "Hello everyone!" : "Hello " + message.from.name;
+    var txt = isGroup ? "大家好我叫「桜愛」 請多多指教！" : "Hello " + message.from.name;
     var reply = new builder.Message()
         .address(message.address)
         .text(txt);
