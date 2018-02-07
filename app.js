@@ -66,17 +66,20 @@ const LuisModelUrl = 'https://' + luisAPIHostName + '/luis/v1/application?id=' +
 // Main dialog with LUIS
 var recognizer = new builder.LuisRecognizer(LuisModelUrl);
 var intents = new builder.IntentDialog({ recognizers: [recognizer] })
-.matches('Greeting', (session) => {
-    session.send('你在跟我打招呼, 你說了： \'%s\'.', session.message.text);
+.matches('Greeting', (s) => {
+    s.send(
+        new builder.Message(s).text('你在跟我打招呼, 你說了： \'%s\'.', s.message.text)
+    );
 })
-.matches('Help', (session) => {
-    session.send('你在求救, 你說了： \'%s\'.', session.message.text);
+.matches('Help', (s) => {
+    s.send('你在求救, 你說了： \'%s\'.', 
+        s.message.text);
 })
 /*
 .matches('<yourIntent>')... See details at http://docs.botframework.com/builder/node/guides/understanding-natural-language/
 */
-.onDefault((session) => {
-    session.send('對不起，我沒聽懂。你說了： \'%s\'.', session.message.text);
+.onDefault((s) => {
+    s.send('對不起，我沒聽懂。你說了： \'%s\'.', s.message.text);
 });
 
 bot.dialog('/', intents);
