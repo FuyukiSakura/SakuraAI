@@ -7,22 +7,14 @@ var builder = require('botbuilder');
 var botbuilder_azure = require("botbuilder-azure");
 var LineConnector = require("botbuilder-linebot-connector");
 
+// Setup Express Server
 var express = require('express');
 var server = express();
-
-// Setup Restify Server
-var server = restify.createServer();
-server.listen(process.env.port || process.env.PORT || 3978, function () {
-   console.log('%s listening to %s', server.name, server.url); 
+server.listen(process.env.port || process.env.PORT || 3980, function () {
+    console.log('%s listening to %s', server.name, server.url); 
 });
-  
-// Create chat connector for communicating with the Bot Framework Service
-/* var connector = new builder.ChatConnector({
-    appId: process.env.MicrosoftAppId,
-    appPassword: process.env.MicrosoftAppPassword,
-    openIdMetadata: process.env.BotOpenIdMetadata 
-}); */
 
+// Create chat connector for LINE
 var connector = new LineConnector.LineConnector({
     hasPushApi: false, //you have to pay for push api >.,<
     // your line
@@ -31,9 +23,24 @@ var connector = new LineConnector.LineConnector({
     channelAccessToken: process.env.channelAccessToken || ""
 });
 
+server.post('/line', connector.listen());  
+
+
+// Setup Restify Server
+/* var server = restify.createServer();
+server.listen(process.env.port || process.env.PORT || 3978, function () {
+    console.log('%s listening to %s', server.name, server.url); 
+});
+
+// Create chat connector for communicating with the Bot Framework Service
+var connector = new builder.ChatConnector({
+    appId: process.env.MicrosoftAppId,
+    appPassword: process.env.MicrosoftAppPassword,
+    openIdMetadata: process.env.BotOpenIdMetadata 
+});
+
 // Listen for messages from users 
-//server.post('/api/messages', connector.listen());
-server.post('/line', connector.listen());
+server.post('/api/messages', connector.listen()); */
 
 /*----------------------------------------------------------------------------------------
 * Bot Storage: This is a great spot to register the private state storage for your bot. 
@@ -73,3 +80,34 @@ var intents = new builder.IntentDialog({ recognizers: [recognizer] })
 });
 
 bot.dialog('/', intents);
+
+bot.on('conversationUpdate', function (message) {
+    // detect event
+    switch (message.text) {
+        case 'follow':
+            break;
+        case 'unfollow':
+            break;
+        case 'join':
+            break;
+        case 'leave':
+            break;
+    }
+    var isGroup = message.address.conversation.isGroup;
+    var txt = isGroup ? "Hello everyone!" : "Hello " + message.from.name;
+    var reply = new builder.Message()
+        .address(message.address)
+        .text(txt);
+    bot.send(reply);
+    bot.beginDialog(message.address, "hello")
+});
+
+bot.dialog("hello", [
+    s => {
+        builder.Prompts.text(s, "go");
+    },
+    (s, r) => {
+        s.send("oh!" + r.response)
+        s.endDialog()
+    }
+])
