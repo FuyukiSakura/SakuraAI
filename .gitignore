@@ -1,3 +1,7 @@
+*.js.map
+package-lock.json
+publish.js
+
 # Logs
 logs
 *.log
