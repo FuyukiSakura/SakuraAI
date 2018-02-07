@@ -5,6 +5,10 @@ A simple echo bot for the Microsoft Bot Framework.
 var restify = require('restify');
 var builder = require('botbuilder');
 var botbuilder_azure = require("botbuilder-azure");
+var LineConnector = require("botbuilder-linebot-connector");
+
+var express = require('express');
+var server = express();
 
 // Setup Restify Server
 var server = restify.createServer();
@@ -13,14 +17,23 @@ server.listen(process.env.port || process.env.PORT || 3978, function () {
 });
   
 // Create chat connector for communicating with the Bot Framework Service
-var connector = new builder.ChatConnector({
+/* var connector = new builder.ChatConnector({
     appId: process.env.MicrosoftAppId,
     appPassword: process.env.MicrosoftAppPassword,
     openIdMetadata: process.env.BotOpenIdMetadata 
+}); */
+
+var connector = new LineConnector.LineConnector({
+    hasPushApi: false, //you have to pay for push api >.,<
+    // your line
+    channelId: process.env.channelId || "",
+    channelSecret: process.env.channelSecret || "",
+    channelAccessToken: process.env.channelAccessToken || ""
 });
 
 // Listen for messages from users 
-server.post('/api/messages', connector.listen());
+//server.post('/api/messages', connector.listen());
+server.post('/line', connector.listen());
 
 /*----------------------------------------------------------------------------------------
 * Bot Storage: This is a great spot to register the private state storage for your bot. 
@@ -47,20 +60,16 @@ const LuisModelUrl = 'https://' + luisAPIHostName + '/luis/v1/application?id=' +
 var recognizer = new builder.LuisRecognizer(LuisModelUrl);
 var intents = new builder.IntentDialog({ recognizers: [recognizer] })
 .matches('Greeting', (session) => {
-    session.send('You reached Greeting intent, you said \'%s\'.', session.message.text);
+    session.send('你在跟我打招呼, 你說了： \'%s\'.', session.message.text);
 })
 .matches('Help', (session) => {
-    session.send('You reached Help intent, you said \'%s\'.', session.message.text);
-})
-.matches('Cancel', (session) => {
-    session.send('You reached Cancel intent, you said \'%s\'.', session.message.text);
+    session.send('你在求救, 你說了： \'%s\'.', session.message.text);
 })
 /*
 .matches('<yourIntent>')... See details at http://docs.botframework.com/builder/node/guides/understanding-natural-language/
 */
 .onDefault((session) => {
-    session.send('Sorry, I did not understand \'%s\'.', session.message.text);
+    session.send('對不起，我沒聽懂。你說了： \'%s\'.', session.message.text);
 });
 
-bot.dialog('/', intents);    
-
+bot.dialog('/', intents);
