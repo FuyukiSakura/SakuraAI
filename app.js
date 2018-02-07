@@ -54,7 +54,9 @@ var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azu
 
 // Create your bot with a function to receive messages from the user
 var bot = new builder.UniversalBot(connector);
-bot.set('storage', tableStorage);
+
+/* ----- This breaks on LINE ----- */
+// bot.set('storage', tableStorage); 
 
 // Make sure you add code to validate these fields
 var luisAppId = process.env.LuisAppId;
