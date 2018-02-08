@@ -63,22 +63,38 @@ var luisAppId = process.env.LuisAppId;
 var luisAPIKey = process.env.LuisAPIKey;
 var luisAPIHostName = process.env.LuisAPIHostName || 'westus.api.cognitive.microsoft.com';
 
-const LuisModelUrl = 'https://' + luisAPIHostName + '/luis/v1/application?id=' + luisAppId + '&subscription-key=' + luisAPIKey;
+const LuisModelUrl = 'https://' + luisAPIHostName + '/luis/v2.0/apps/' + luisAppId + '?subscription-key=' + luisAPIKey;
 
 // Main dialog with LUIS
 var recognizer = new builder.LuisRecognizer(LuisModelUrl);
 var intents = new builder.IntentDialog({ recognizers: [recognizer] })
 .matches('Greeting', (s) => {
-   s.send(new builder.Message(s).text('大家好我叫「桜愛」 請多多指教'));
+   console.log("----- Greeting Intent -----");
+   s.send(new builder.Message(s).text('大家好我叫 桜愛 請多多指教'));
 })
-.matches('Help', (s) => {
-   s.send(new builder.Message(s).text('FS只能靠自己'));
+.matches('Info.Colonization', (s, r) => {
+   console.log("----- Colonization Intent -----");
+   let m = new builder.Message(s)
+        .addAttachment(
+            //Planet image
+            new builder.MediaCard(s).image(builder.CardImage.create(s, 'https://i.imgur.com/f8dX0kA.png'))
+        );
+   s.send(m);
+   s.send(new builder.Message(s).text('小櫻為你帶來了殖民星的資訊哦~'))
 })
-/*
-.matches('<yourIntent>')... See details at http://docs.botframework.com/builder/node/guides/understanding-natural-language/
-*/
+.matches('Info.Coordinate', (s, r) => {
+   console.log("----- Coordinate Intent -----");
+   if(r.entities[0] !== undefined){
+       console.log(" # Entity found");
+       console.log(r.entities[0]);
+       s.send(new builder.Message(s).text('這是'+r.entities[0].entity+'的星體資訊哦'));
+   }else{
+       console.log(" !# Entity NOT found");
+       s.send(new builder.Message(s).text('請問你是要找誰的星體資訊？'));
+   }
+})
 .onDefault((s) => {
-    s.send(new builder.Message(s).text('對不起，我沒聽懂。你說了：'+ s.message.text));
+    console.log("!! Default !!");  
 });
 
 bot.dialog('/', intents);
@@ -101,12 +117,12 @@ bot.on('conversationUpdate', function (message) {
         .address(message.address)
         .text(txt);
     bot.send(reply);
-    bot.beginDialog(message.address, "hello")
+    //bot.beginDialog(message.address, "hello")
 });
 
-bot.dialog("hello", [
+bot.dialog("SearchUser", [
     s => {
-        builder.Prompts.text(s, "go");
+        builder.Prompts.text(s, "你要找誰");
     },
     (s, r) => {
         s.send("oh!" + r.response)
